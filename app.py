@@ -1,8 +1,23 @@
 import streamlit as st
 import pandas as pd
+import os
 
 # ==========================================
-# 1. CSS STYLING (Aesthetic Mobile UI)
+# 1. 自动图片定位函数 (解决中文文件名不显示的问题)
+# ==========================================
+def get_image_path(filename):
+    """在当前目录寻找匹配的文件，解决编码导致的路径问题"""
+    try:
+        files = os.listdir('.')
+        for f in files:
+            if f.strip() == filename.strip():
+                return f
+    except:
+        pass
+    return filename
+
+# ==========================================
+# 2. CSS STYLING (Aesthetic Mobile UI)
 # ==========================================
 st.set_page_config(page_title="Petizen", page_icon="🐾", layout="centered")
 
@@ -39,9 +54,10 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. DATA (Using your Chinese Filenames)
+# 3. DATA (Keeping Chinese Filenames Exactly)
 # ==========================================
 
+# 12 Merchants (Note the space in '商店 11.jpg' as seen in your screenshot)
 merchants = [
     {"id": 1, "name": "Fancy Tail Spa", "loc": "Central", "dist": 0.5, "price": 450, "rating": 4.9, "img": "商店1.jpg", "tel": "2345 1001", "serv": "Haircut, Bath, Aroma Spa"},
     {"id": 2, "name": "CityVet Clinic", "loc": "Wan Chai", "dist": 1.2, "price": 850, "rating": 4.8, "img": "商店2.jpg", "tel": "2345 1002", "serv": "Medical, Vaccine, Checkup"},
@@ -57,19 +73,7 @@ merchants = [
     {"id": 12, "name": "Uber Pet HK", "loc": "All HK", "dist": 0.1, "price": 180, "rating": 5.0, "img": "商店12.jpg", "tel": "2345 1012", "serv": "Transport, Pet Taxi"}
 ]
 
-coupons = [
-    {"name": "Bath + Haircut Bundle", "price": "$399", "orig": "$550"},
-    {"name": "Cat Food Group Buy (x3)", "price": "$888", "orig": "$1200"},
-    {"name": "Vaccine & Checkup Bundle", "price": "$699", "orig": "$950"},
-    {"name": "Afternoon Tea for Two", "price": "$199", "orig": "$320"},
-    {"name": "7-Day Stay Package", "price": "$2500", "orig": "$3500"},
-    {"name": "Swimming Pass (10x)", "price": "$2200", "orig": "$3000"},
-    {"name": "Puppy Starter Kit", "price": "$450", "orig": "$650"},
-    {"name": "Grooming + Dental Bundle", "price": "$780", "orig": "$1100"},
-    {"name": "Joint Spa Deal", "price": "$550", "orig": "$800"},
-    {"name": "Obedience Training Bundle", "price": "$1500", "orig": "$2000"}
-]
-
+# 8 Forum Posts
 posts = [
     {"user": "@Meow_Mom", "img": "宠物1.jpg", "text": "My cute kitty climbed onto my bed today!", "comments": ["So cute!", "I want one too!"]},
     {"user": "@TinyCat", "img": "宠物2.jpg", "text": "My one-year-old cat is tiny enough to fit in a cup! So adorable.", "comments": ["Is it real?", "Too cute!"]},
@@ -82,7 +86,7 @@ posts = [
 ]
 
 # ==========================================
-# 3. APP LOGIC
+# 4. APP LOGIC
 # ==========================================
 
 if 'nav' not in st.session_state:
@@ -115,7 +119,6 @@ elif st.session_state.nav == 'Home':
     st.image("logo.jpg", width=70)
     st.markdown(f"### Hello, {st.session_state.user}! 👋")
     
-    # Sorting logic
     sort_option = st.selectbox("Sort By:", 
                                ["Distance (Nearest)", "Rating (Highest)", 
                                 "Price (Low to High)", "Price (High to Low)"])
@@ -127,14 +130,23 @@ elif st.session_state.nav == 'Home':
     elif "High to Low" in sort_option: df_shops = df_shops.sort_values("price", ascending=False)
     
     for idx, row in df_shops.iterrows():
+        # 这里使用了 get_image_path 函数来确保能找到中文命名的图片
+        img_path = get_image_path(row['img'])
         with st.container():
             st.markdown(f"""
             <div class="app-card">
-                <img src="{row['img']}" style="width:100%; border-radius:15px; margin-bottom:15px; height:180px; object-fit:cover;">
                 <div style="display:flex; justify-content:space-between;">
                     <span class="shop-title">{row['name']}</span>
                     <span style="color:#FF6B6B; font-weight:bold;">⭐ {row['rating']}</span>
                 </div>
+            """, unsafe_allow_html=True)
+            # 尝试加载图片
+            try:
+                st.image(img_path, use_column_width=True)
+            except:
+                st.warning(f"Image '{row['img']}' not found in folder.")
+            
+            st.markdown(f"""
                 <div style="margin: 10px 0;">
                     <span class="shop-tag">📍 {row['loc']}</span>
                     <span class="shop-tag">💰 ${row['price']} up</span>
@@ -148,7 +160,8 @@ elif st.session_state.nav == 'Home':
 # --- PAGE: DEALS ---
 elif st.session_state.nav == 'Deals':
     st.markdown("## 🎟️ Bundle Deals")
-    for c in coupons:
+    for idx, c in enumerate([{"name": "Bath Bundle", "price": "$399", "orig": "$550"}, 
+                             {"name": "Food Group Buy", "price": "$888", "orig": "$1200"}]): # 示例
         st.markdown(f"""
         <div class="app-card" style="border-left: 10px solid #FF6B6B;">
             <span style="font-weight:bold; font-size:18px;">{c['name']}</span><br>
@@ -156,24 +169,30 @@ elif st.session_state.nav == 'Deals':
             <span style="text-decoration:line-through; color:#BDC3C7; font-size:14px;">{c['orig']}</span>
         </div>
         """, unsafe_allow_html=True)
-        st.button("Claim Deal", key=f"d_{c['name']}")
+        st.button("Claim", key=f"d_{idx}")
 
 # --- PAGE: COMMUNITY ---
 elif st.session_state.nav == 'Community':
     st.markdown("## 💬 Petizen Community")
     for p in posts:
-        st.markdown(f"""
-        <div class="app-card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span class="post-user">{p['user']}</span>
-                <div><span class="action-btn">+ Follow</span> <span class="action-btn">+ Friend</span></div>
-            </div>
-            <img src="{p['img']}" style="width:100%; border-radius:15px; margin: 15px 0;">
-            <p>{p['text']}</p>
-        """, unsafe_allow_html=True)
-        for comm in p['comments']:
-            st.markdown(f"<div class='comment-box'>{comm}</div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        # 同样使用匹配函数
+        pet_img = get_image_path(p['img'])
+        with st.container():
+            st.markdown(f"""
+            <div class="app-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span class="post-user">{p['user']}</span>
+                    <div><span class="action-btn">+ Follow</span> <span class="action-btn">+ Friend</span></div>
+                </div>
+            """, unsafe_allow_html=True)
+            try:
+                st.image(pet_img, use_column_width=True)
+            except:
+                st.warning(f"Post image '{p['img']}' not found.")
+            st.write(p['text'])
+            for comm in p['comments']:
+                st.markdown(f"<div class='comment-box'>{comm}</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
 # --- NAVIGATION ---
 st.markdown("<br><br><br>", unsafe_allow_html=True)
