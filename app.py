@@ -52,7 +52,7 @@ st.markdown("""
         margin-bottom: 15px;
     }
 
-    /* Gradient Buttons */
+    /* Buttons & Inputs */
     .stButton>button {
         background: linear-gradient(45deg, #FF6B6B 0%, #FFB6C1 100%);
         color: white !important;
@@ -61,6 +61,11 @@ st.markdown("""
         font-weight: bold;
         transition: 0.3s;
         width: 100%;
+    }
+    
+    .stTextInput>div>div>input {
+        border-radius: 20px;
+        border: 1px solid #FFB6C1;
     }
     
     .shop-title { font-size: 22px; font-weight: 800; color: #4A4A4A; }
@@ -94,39 +99,38 @@ merchants = [
 
 # --- DATABASE: COUPONS (10+) ---
 coupons = [
-    {"n": "Summer Spa Bundle", "p": "$399", "o": "$550", "d": "Full Haircut + Milk Bath + Ear Clean"},
-    {"n": "Cat Food Group Buy", "p": "$888", "o": "$1200", "d": "Bulk buy x3 bags of Premium Kibble"},
-    {"n": "Vaccine Health Bundle", "p": "$650", "o": "$900", "d": "Rabies + DHPPi + Vet Checkup"},
-    {"n": "Hotel Stay Bundle", "p": "$2400", "o": "$3200", "d": "7-Night Stay + 1 Free Spa Session"},
-    {"n": "Doggy Swim Bundle", "p": "$1500", "o": "$2000", "d": "10-Lesson Entry Pass for Pool"},
-    {"n": "Bakery Tea Combo", "p": "$150", "o": "$250", "d": "Cake + Drink + 1 Pet Snack"},
-    {"n": "Puppy Training Pack", "p": "$1800", "o": "$2500", "d": "5 sessions of Obedience Training"},
+    {"n": "Summer Spa Bundle", "p": "$399", "o": "$550", "d": "Haircut + Bath + Ear Clean"},
+    {"n": "Cat Food Group Buy", "p": "$888", "o": "$1200", "d": "Bulk buy x3 Premium Bags"},
+    {"n": "Vaccine Health Bundle", "p": "$650", "o": "$900", "d": "Rabies + DHPPi + Checkup"},
+    {"n": "Hotel Stay Bundle", "p": "$2400", "o": "$3200", "d": "7-Night Stay + 1 Spa"},
+    {"n": "Doggy Swim Pass", "p": "$1500", "o": "$2000", "d": "10-Lesson Entry Pass"},
+    {"n": "Bakery Tea Combo", "p": "$150", "o": "$250", "d": "Cake + Drink + Snack"},
+    {"n": "Puppy Training Pack", "p": "$1800", "o": "$2500", "d": "5 sessions of Training"},
     {"n": "Mega Grooming Deal", "p": "$999", "o": "$1500", "d": "3-session Haircut voucher"},
-    {"n": "Dental & Ear Combo", "p": "$420", "o": "$600", "d": "Deep Cleaning for healthy pets"},
-    {"n": "Friend Referral Deal", "p": "$500", "o": "$800", "d": "Two pets groom together and save!"}
+    {"n": "Dental & Ear Combo", "p": "$420", "o": "$600", "d": "Professional Deep Cleaning"},
+    {"n": "Bestie Discount", "p": "$500", "o": "$800", "d": "Two pets save 30% together!"}
 ]
 
-# --- DATABASE: FORUM (8) ---
 posts = [
-    {"id": 0, "user": "@Kitty_Mom", "img": "宠物1.jpg", "text": "My kitty climbed onto my bed today! So soft."},
-    {"id": 1, "user": "@TinyPaw", "img": "宠物2.jpg", "text": "Tiny enough to fit in a cup! So adorable."},
-    {"id": 2, "user": "@Bunny_Fan", "img": "宠物3.jpg", "text": "Polite bunny covered its eyes while I was changing!"},
+    {"id": 0, "user": "@Kitty_Mom", "img": "宠物1.jpg", "text": "My kitty climbed onto my bed today!"},
+    {"id": 1, "user": "@TinyPaw", "img": "宠物2.jpg", "text": "Tiny enough to fit in a cup!"},
+    {"id": 2, "user": "@Bunny_Fan", "img": "宠物3.jpg", "text": "Polite bunny covered its eyes!"},
     {"id": 3, "user": "@LineFriends", "img": "宠物4.jpg", "text": "Puppy looks exactly like the character!"},
-    {"id": 4, "user": "@Bird_Sir", "img": "宠物5.jpg", "text": "Parrot head is round like a true gentleman."},
-    {"id": 5, "user": "@Alpaca_Lo", "img": "宠物6.jpg", "text": "The fluff is irresistible!"},
-    {"id": 6, "user": "@Piggy_Life", "img": "宠物7.jpg", "text": "Pigs are super cute pets too."},
-    {"id": 7, "user": "@Hedgehog_H", "img": "宠物8.jpg", "text": "Spiky coworker messes with my laptop!"}
+    {"id": 4, "user": "@Bird_Sir", "img": "宠物5.jpg", "text": "Parrot head is round like a gentleman."},
+    {"id": 5, "user": "@Alpaca_Lo", "img": "宠物6.jpg", "text": "Fluffy Alpaca day!"},
+    {"id": 6, "user": "@Piggy_Life", "img": "宠物7.jpg", "text": "Pigs are cute pets too."},
+    {"id": 7, "user": "@Hedgehog_H", "img": "宠物8.jpg", "text": "Work from home with a hedgehog!"}
 ]
 
 # ==========================================
 # 4. STICKY SIDEBAR NAVIGATION
 # ==========================================
 with st.sidebar:
-    st.image("logo.jpg", width=100)
-    st.markdown("### Menu")
+    st.image("logo.jpg", width=120)
+    st.markdown("### Nav Menu")
     if st.button("🏠 Home (Shops)"): st.session_state.nav = 'Home'; st.rerun()
-    if st.button("🎟️ Deals (Coupons)"): st.session_state.nav = 'Deals'; st.rerun()
-    if st.button("💬 Community (Forum)"): st.session_state.nav = 'Community'; st.rerun()
+    if st.button("🎟️ Deals (Vouchers)"): st.session_state.nav = 'Deals'; st.rerun()
+    if st.button("💬 Forum (Feed)"): st.session_state.nav = 'Community'; st.rerun()
     st.markdown("---")
     st.write("Logged in as:")
     st.info(st.session_state.get('user', 'Guest'))
@@ -135,9 +139,8 @@ with st.sidebar:
 # 5. PAGE CONTENT
 # ==========================================
 
-# --- PAGE: HOME (SHOPS & BOOKING) ---
+# --- PAGE: HOME (SHOPS + SEARCH) ---
 if st.session_state.nav == 'Home':
-    # Initial Passport Check
     if 'user' not in st.session_state:
         st.markdown("# 🐾 Welcome to Petizen")
         with st.form("passport"):
@@ -147,45 +150,53 @@ if st.session_state.nav == 'Home':
                 if name: st.session_state.user = name; st.rerun()
     else:
         st.markdown(f"## Petizen Services ✨")
+        
+        # SEARCH BAR (Top of Page)
+        search_query = st.text_input("🔍 Search for services (e.g. Grooming, Vet, Pool)...").lower()
+        
         sort_option = st.selectbox("Sort By:", ["Distance (Nearest)", "Rating (Highest)", "Price (Low-High)", "Price (High-Low)"])
+        
+        # Filtering & Sorting Logic
         df = pd.DataFrame(merchants)
+        if search_query:
+            df = df[df['serv'].str.lower().contains(search_query) | df['name'].str.lower().contains(search_query)]
+        
         if "Distance" in sort_option: df = df.sort_values("dist")
         elif "Rating" in sort_option: df = df.sort_values("rating", ascending=False)
         elif "Low-High" in sort_option: df = df.sort_values("price")
         else: df = df.sort_values("price", ascending=False)
 
-        for idx, row in df.iterrows():
-            img = get_image_path(row['img'])
-            with st.container():
-                st.markdown(f"""<div class="app-card">
-                    <span class="shop-title">{row['name']}</span> <span style="color:#FF6B6B;">⭐ {row['rating']}</span>""", unsafe_allow_html=True)
-                st.image(img, use_column_width=True)
-                st.markdown(f"""<div style="margin: 10px 0;"><span class="shop-tag">📍 {row['loc']}</span><span class="shop-tag">💰 ${row['price']}</span></div>
-                    <p style="color:#555; font-size:14px;"><b>Services:</b> {row['serv']}</p></div>""", unsafe_allow_html=True)
-                if st.button(f"Book Appointment @ {row['name']}", key=f"bk_{idx}"):
-                    st.session_state.booking_shop_id = row['id']
-                if st.session_state.booking_shop_id == row['id']:
-                    slot = st.selectbox("Pick a Time Slot:", ["1PM - 2PM", "2PM - 3PM", "3PM - 4PM", "4PM - 5PM"], key=f"s_{idx}")
-                    if st.button("Confirm Reservation", key=f"cf_{idx}"):
-                        st.success(f"Success! {slot} booked."); st.session_state.booking_shop_id = None
+        if df.empty:
+            st.warning("No services found matching your search.")
+        else:
+            for idx, row in df.iterrows():
+                img = get_image_path(row['img'])
+                with st.container():
+                    st.markdown(f"""<div class="app-card">
+                        <span class="shop-title">{row['name']}</span> <span style="color:#FF6B6B;">⭐ {row['rating']}</span>""", unsafe_allow_html=True)
+                    st.image(img, use_column_width=True)
+                    st.markdown(f"""<div style="margin: 10px 0;"><span class="shop-tag">📍 {row['loc']}</span><span class="shop-tag">💰 ${row['price']}</span></div>
+                        <p style="color:#555; font-size:14px;"><b>Services:</b> {row['serv']}</p></div>""", unsafe_allow_html=True)
+                    if st.button(f"Book Appointment @ {row['name']}", key=f"bk_{idx}"):
+                        st.session_state.booking_shop_id = row['id']
+                    if st.session_state.booking_shop_id == row['id']:
+                        slot = st.selectbox("Select Time Slot:", ["1PM-2PM", "2PM-3PM", "3PM-4PM", "4PM-5PM"], key=f"s_{idx}")
+                        if st.button("Confirm Reservation", key=f"cf_{idx}"):
+                            st.success(f"Success! {slot} booked."); st.session_state.booking_shop_id = None
 
 # --- PAGE: DEALS (10+ COUPONS) ---
 elif st.session_state.nav == 'Deals':
     st.markdown("## 🎟️ Exclusive Bundle Deals")
-    st.write("Group-buy vouchers and bundled services for extra savings.")
     for idx, c in enumerate(coupons):
         st.markdown(f"""<div class="voucher-card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:bold; font-size:18px; color:#4A4A4A;">{c['n']}</span>
-                <span style="background:#FF6B6B; color:white; padding:2px 10px; border-radius:10px; font-size:11px;">PROMO</span>
-            </div>
+            <span style="font-weight:bold; font-size:18px;">{c['n']}</span>
             <p style="color:gray; font-size:13px; margin:5px 0;">{c['d']}</p>
             <span style="font-size:24px; font-weight:800; color:#FF6B6B;">{c['p']}</span>
             <span style="text-decoration:line-through; color:#BDC3C7; font-size:15px; margin-left:10px;">{c['o']}</span>
             </div>""", unsafe_allow_html=True)
-        if st.button(f"Claim Voucher: {c['n']}", key=f"v_{idx}"): st.toast("Voucher saved to wallet!")
+        if st.button(f"Claim Voucher: {c['n']}", key=f"v_{idx}"): st.toast("Saved to your wallet!")
 
-# --- PAGE: COMMUNITY (FORUM & COMMENTS) ---
+# --- PAGE: COMMUNITY ---
 elif st.session_state.nav == 'Community':
     st.markdown("## 💬 Forum Feed")
     for p in posts:
@@ -200,7 +211,7 @@ elif st.session_state.nav == 'Community':
             st.markdown(f"<b>{p['text']}</b><hr>", unsafe_allow_html=True)
             for c in st.session_state.comments_db[p['id']]:
                 st.markdown(f"<div class='comment-bubble'>🗨️ {c}</div>", unsafe_allow_html=True)
-            nc = st.text_input("Add a comment...", key=f"i_{p['id']}")
-            if st.button("Post", key=f"p_{p['id']}"):
+            nc = st.text_input("Write a comment...", key=f"i_{p['id']}")
+            if st.button("Post Comment", key=f"p_{p['id']}"):
                 if nc: st.session_state.comments_db[p['id']].append(nc); st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
