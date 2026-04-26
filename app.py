@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
 import os
+import base64
 
 # ==========================================
-# 1. HELPER: IMAGE MATCHER (For Chinese/Number Filenames)
+# 1. HELPER: IMAGE MATCHER & GIF RENDERER
 # ==========================================
 def get_image_path(filename):
     try:
@@ -14,6 +15,17 @@ def get_image_path(filename):
     except:
         pass
     return filename
+
+def get_gif_html(filename, width=160):
+    """强制使用 HTML Base64 渲染 GIF，保证100%会动且清晰"""
+    actual_path = get_image_path(filename)
+    try:
+        with open(actual_path, "rb") as f:
+            data = base64.b64encode(f.read()).decode("utf-8")
+        # 增加圆角、阴影和间距，使表情包更好看
+        return f'<img src="data:image/gif;base64,{data}" width="{width}px" style="border-radius:15px; margin-right:15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">'
+    except:
+        return ""
 
 # ==========================================
 # 2. BEAUTIFUL CUSTOM CSS (Kawaii Pastel Theme)
@@ -143,24 +155,22 @@ posts = [
     {"id": 7, "user": "@Hedgehog_H", "img": "宠物8.jpg", "text": "Work from home with a hedgehog!"}
 ]
 
-# --- VIRTUAL PET COMPONENT (GIF 17.gif) ---
+# --- VIRTUAL PET COMPONENT (17.gif) ---
 def render_virtual_pet():
     st.markdown("<div class='virtual-pet-box'>", unsafe_allow_html=True)
     if st.session_state.smile_trigger:
-        # 当被触发时，显示 17.gif
-        gif_path = get_image_path("17.gif")
+        # 使用 base64 保证 17.gif 也顺畅播放并变大
+        gif_html = get_gif_html("17.gif", width=180)
         msg = "YAY! Happiness +1 💖"
         
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            try: st.image(gif_path, use_column_width=True)
-            except: st.markdown("😻", unsafe_allow_html=True)
-        
+        if gif_html:
+            st.markdown(f"<div style='text-align:center;'>{gif_html}</div>", unsafe_allow_html=True)
+        else:
+            st.markdown("<h1 style='text-align:center;'>😻</h1>", unsafe_allow_html=True)
+            
         st.markdown(f"<h4 style='color:#FF6B6B; margin:5px 0;'>{msg}</h4>", unsafe_allow_html=True)
-        # 播放一次后立即重置状态，下次刷新就不会再显示动图了
         st.session_state.smile_trigger = False 
     else:
-        # 平常状态：只显示当前的幸福值
         st.markdown("<h4 style='color:gray; margin:5px 0;'>Ready for next treat!</h4>", unsafe_allow_html=True)
     
     st.markdown(f"<p style='color:gray; font-size:14px; margin:0;'>Total Happiness Level: <b>{st.session_state.happiness}</b> 🌟</p>", unsafe_allow_html=True)
@@ -274,7 +284,7 @@ elif st.session_state.nav == 'Passport_Display':
 
 # --- PAGE 3: HOME (SHOPS & BOOKING) ---
 elif st.session_state.nav == 'Home':
-    render_virtual_pet() # Displays 17.gif when triggered
+    render_virtual_pet() 
     
     st.markdown(f"## Explore Services ✨")
     search_query = st.text_input("🔍 Search for services...").lower()
@@ -301,7 +311,6 @@ elif st.session_state.nav == 'Home':
             if st.session_state.booking_shop_id == row['id']:
                 slot = st.selectbox("Select Time Slot:", ["1PM-2PM", "2PM-3PM", "3PM-4PM", "4PM-5PM"], key=f"s_{idx}")
                 if st.button("Confirm Reservation", key=f"cf_{idx}"):
-                    # 触发动图播放！
                     st.session_state.happiness += 1
                     st.session_state.smile_trigger = True
                     st.session_state.booking_shop_id = None
@@ -310,7 +319,7 @@ elif st.session_state.nav == 'Home':
 
 # --- PAGE 4: DEALS ---
 elif st.session_state.nav == 'Deals':
-    render_virtual_pet() # Displays 17.gif when triggered
+    render_virtual_pet()
     
     st.markdown("## 🎟️ Exclusive Bundle Deals")
     for idx, c in enumerate(coupons):
@@ -321,13 +330,12 @@ elif st.session_state.nav == 'Deals':
             <span style="text-decoration:line-through; color:#BDC3C7; font-size:15px; margin-left:10px;">{c['o']}</span>
             </div>""", unsafe_allow_html=True)
         if st.button(f"Claim Voucher: {c['n']}", key=f"v_{idx}"): 
-            # 触发动图播放！
             st.session_state.happiness += 1
             st.session_state.smile_trigger = True
             st.balloons()
             st.rerun()
 
-# --- PAGE 5: COMMUNITY (FORUM + GIF STICKERS 1-16) ---
+# --- PAGE 5: COMMUNITY (FORUM + BIG GIF STICKERS) ---
 elif st.session_state.nav == 'Community':
     st.markdown("## 💬 Forum Feed")
     for p in posts:
@@ -339,25 +347,19 @@ elif st.session_state.nav == 'Community':
             if st.button("+ Friend", key=f"fr_{p['id']}"): st.toast("Friend Request Sent!")
             st.markdown("</div></div>", unsafe_allow_html=True)
             st.image(pet_img, use_column_width=True)
-            st.markdown(f"<b>{p['text']}</b><hr>", unsafe_allow_html=True)
+            st.markdown(f"<b>{p['text']}</b><hr style='margin:10px 0;'>", unsafe_allow_html=True)
             
-            # --- 渲染表情包动图 (1-16.gif) 作为回复 ---
-            gif1_id = p['id'] * 2 + 1  # 奇数GIF (1, 3, 5...)
-            gif2_id = p['id'] * 2 + 2  # 偶数GIF (2, 4, 6...)
+            # --- 渲染超大表情包动图 (1-16.gif) ---
+            gif1_id = p['id'] * 2 + 1  
+            gif2_id = p['id'] * 2 + 2  
             
-            g1_path = get_image_path(f"{gif1_id}.gif")
-            g2_path = get_image_path(f"{gif2_id}.gif")
+            # 尺寸设定为 width=160px，比原来大了一倍以上
+            g1_html = get_gif_html(f"{gif1_id}.gif", width=160)
+            g2_html = get_gif_html(f"{gif2_id}.gif", width=160)
             
-            # 把两张 GIF 并排显示在评论区上方
-            c_gif1, c_gif2, _ = st.columns([1, 1, 3])
-            with c_gif1:
-                try: st.image(g1_path, width=70) 
-                except: pass
-            with c_gif2:
-                try: st.image(g2_path, width=70)
-                except: pass
+            if g1_html or g2_html:
+                st.markdown(f"<div style='display:flex; margin-bottom:15px;'>{g1_html}{g2_html}</div>", unsafe_allow_html=True)
 
-            # 真实的文字评论
             for c in st.session_state.comments_db[p['id']]:
                 st.markdown(f"<div class='comment-bubble'>🗨️ {c}</div>", unsafe_allow_html=True)
             
