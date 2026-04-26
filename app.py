@@ -1,10 +1,9 @@
 import streamlit as st
 import pandas as pd
 import os
-import time
 
 # ==========================================
-# 1. HELPER: IMAGE MATCHER (For Chinese Filenames)
+# 1. HELPER: IMAGE MATCHER (For Chinese/Number Filenames)
 # ==========================================
 def get_image_path(filename):
     try:
@@ -17,7 +16,7 @@ def get_image_path(filename):
     return filename
 
 # ==========================================
-# 2. BEAUTIFUL CUSTOM CSS (Including Passport & Virtual Pet)
+# 2. BEAUTIFUL CUSTOM CSS (Kawaii Pastel Theme)
 # ==========================================
 st.set_page_config(page_title="Petizen", page_icon="🐾", layout="centered")
 
@@ -66,8 +65,16 @@ st.markdown("""
         margin-bottom: 25px;
         box-shadow: 0 5px 15px rgba(255, 107, 107, 0.15);
     }
-    .cat-emoji { font-size: 65px; line-height: 1; }
     
+    /* Voucher Styling */
+    .voucher-card {
+        background: linear-gradient(90deg, #FFF9FA 0%, #FFF0F5 100%);
+        border: 2px dashed #FFB6C1;
+        border-radius: 20px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
     /* Buttons */
     .stButton>button {
         background: linear-gradient(45deg, #FF6B6B 0%, #FFB6C1 100%);
@@ -96,7 +103,7 @@ if 'booking_shop_id' not in st.session_state: st.session_state.booking_shop_id =
 if 'happiness' not in st.session_state: st.session_state.happiness = 0
 if 'smile_trigger' not in st.session_state: st.session_state.smile_trigger = False
 
-# --- DATABASES (Keeping exact Chinese names for images) ---
+# --- DATABASES ---
 merchants = [
     {"id": 1, "name": "Fancy Tail Spa", "loc": "Central", "dist": 0.5, "price": 450, "rating": 4.9, "img": "商店1.jpg", "serv": "Haircut, Bath, Aroma Spa"},
     {"id": 2, "name": "CityVet Clinic", "loc": "Wan Chai", "dist": 1.2, "price": 850, "rating": 4.8, "img": "商店2.jpg", "serv": "Vaccine, Surgery"},
@@ -136,24 +143,28 @@ posts = [
     {"id": 7, "user": "@Hedgehog_H", "img": "宠物8.jpg", "text": "Work from home with a hedgehog!"}
 ]
 
-# --- VIRTUAL PET COMPONENT ---
+# --- VIRTUAL PET COMPONENT (GIF 17.gif) ---
 def render_virtual_pet():
+    st.markdown("<div class='virtual-pet-box'>", unsafe_allow_html=True)
     if st.session_state.smile_trigger:
-        cat_face = "😻"
+        # 当被触发时，显示 17.gif
+        gif_path = get_image_path("17.gif")
         msg = "YAY! Happiness +1 💖"
-        # Reset trigger so it goes back to normal next action
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            try: st.image(gif_path, use_column_width=True)
+            except: st.markdown("😻", unsafe_allow_html=True)
+        
+        st.markdown(f"<h4 style='color:#FF6B6B; margin:5px 0;'>{msg}</h4>", unsafe_allow_html=True)
+        # 播放一次后立即重置状态，下次刷新就不会再显示动图了
         st.session_state.smile_trigger = False 
     else:
-        cat_face = "😺"
-        msg = "Hi! Let's book something fun!"
-
-    st.markdown(f"""
-    <div class="virtual-pet-box">
-        <div class="cat-emoji">{cat_face}</div>
-        <h4 style="color:#FF6B6B; margin:5px 0;">{msg}</h4>
-        <p style="color:gray; font-size:14px; margin:0;">Total Happiness Level: <b>{st.session_state.happiness}</b> 🌟</p>
-    </div>
-    """, unsafe_allow_html=True)
+        # 平常状态：只显示当前的幸福值
+        st.markdown("<h4 style='color:gray; margin:5px 0;'>Ready for next treat!</h4>", unsafe_allow_html=True)
+    
+    st.markdown(f"<p style='color:gray; font-size:14px; margin:0;'>Total Happiness Level: <b>{st.session_state.happiness}</b> 🌟</p>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ==========================================
 # 4. STICKY SIDEBAR NAVIGATION
@@ -161,8 +172,6 @@ def render_virtual_pet():
 with st.sidebar:
     st.image(get_image_path("logo.jpg"), width=120)
     st.markdown("### Nav Menu")
-    
-    # Check if user is logged in to show full menu
     if 'user' in st.session_state:
         if st.button("🛂 My Passport"): st.session_state.nav = 'Passport_Display'; st.rerun()
         if st.button("🏠 Home (Shops)"): st.session_state.nav = 'Home'; st.rerun()
@@ -207,28 +216,25 @@ if st.session_state.nav == 'Form':
                         "gender": p_gender, "diet": p_diet, "vaccine": p_vaccine, 
                         "owner_name": o_name, "tel": o_tel, "age": p_age
                     }
-                    st.session_state.nav = 'Passport_Display' # Redirect to display page!
+                    st.session_state.nav = 'Passport_Display'
                     st.rerun()
                 else:
                     st.error("Please fill in the required fields (*).")
 
-# --- PAGE 2: PASSPORT DISPLAY (AESTHETIC UI) ---
+# --- PAGE 2: PASSPORT DISPLAY ---
 elif st.session_state.nav == 'Passport_Display':
     u = st.session_state.user
     st.markdown("<h2 style='text-align: center;'>Pet Passport</h2>", unsafe_allow_html=True)
     
-    # 1. Profile Header Card
     st.markdown("<div class='passport-card'>", unsafe_allow_html=True)
     col1, col2 = st.columns([1, 1.5])
     with col1:
-        # Load cat.jpg exactly as requested
         st.image(get_image_path("cat.jpg"), use_column_width=True)
     with col2:
         st.markdown(f"<h1 style='color:#2D3436; margin-bottom:5px;'>{u['pet_name']} ❤️</h1>", unsafe_allow_html=True)
         st.markdown(f"🐾 **Breed/Species:** {u['color']} {u['species']}<br>📅 **Age:** {u['age'] if u['age'] else 'Secret'}<br>👤 **Owner:** {u['owner_name']}", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 2. Vaccination Status
     st.markdown(f"""
     <div class='passport-card'>
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -237,14 +243,11 @@ elif st.session_state.nav == 'Passport_Display':
         </div>
         <p style='color:gray; font-size:13px;'>All core vaccines verified.</p>
         <div>
-            <span class='check-item'>✔️ Rabies</span>
-            <span class='check-item'>✔️ DHPP</span>
-            <span class='check-item'>✔️ Bordetella</span>
+            <span class='check-item'>✔️ Rabies</span> <span class='check-item'>✔️ DHPP</span> <span class='check-item'>✔️ Bordetella</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # 3. Medical & QR
     col3, col4 = st.columns(2)
     with col3:
         st.markdown("""
@@ -266,22 +269,19 @@ elif st.session_state.nav == 'Passport_Display':
         """, unsafe_allow_html=True)
 
     st.markdown("<div class='share-btn'>", unsafe_allow_html=True)
-    if st.button("🔗 Share with Vet / Services"):
-        st.success("Passport link copied!")
+    if st.button("🔗 Share with Vet / Services"): st.success("Passport link copied!")
     st.markdown("</div>", unsafe_allow_html=True)
 
-# --- PAGE 3: HOME (SHOPS & BOOKING & VIRTUAL PET) ---
+# --- PAGE 3: HOME (SHOPS & BOOKING) ---
 elif st.session_state.nav == 'Home':
-    render_virtual_pet() # Add virtual cat here
+    render_virtual_pet() # Displays 17.gif when triggered
     
     st.markdown(f"## Explore Services ✨")
-    search_query = st.text_input("🔍 Search for services (Grooming, Vet, Pool, etc.)...").lower()
+    search_query = st.text_input("🔍 Search for services...").lower()
     sort_option = st.selectbox("Sort By:", ["Distance (Nearest)", "Rating (Highest)", "Price (Low-High)", "Price (High-Low)"])
     
     df = pd.DataFrame(merchants)
-    if search_query:
-        df = df[df['serv'].str.lower().contains(search_query) | df['name'].str.lower().contains(search_query)]
-    
+    if search_query: df = df[df['serv'].str.lower().contains(search_query) | df['name'].str.lower().contains(search_query)]
     if "Distance" in sort_option: df = df.sort_values("dist")
     elif "Rating" in sort_option: df = df.sort_values("rating", ascending=False)
     elif "Low-High" in sort_option: df = df.sort_values("price")
@@ -296,22 +296,21 @@ elif st.session_state.nav == 'Home':
             st.markdown(f"""<div style="margin: 10px 0;"><span class="shop-tag">📍 {row['loc']}</span><span class="shop-tag">💰 ${row['price']}</span></div>
                 <p style="color:#555; font-size:14px;"><b>Services:</b> {row['serv']}</p></div>""", unsafe_allow_html=True)
             
-            if st.button(f"Book Appointment @ {row['name']}", key=f"bk_{idx}"):
+            if st.button(f"Book @ {row['name']}", key=f"bk_{idx}"):
                 st.session_state.booking_shop_id = row['id']
-            
             if st.session_state.booking_shop_id == row['id']:
                 slot = st.selectbox("Select Time Slot:", ["1PM-2PM", "2PM-3PM", "3PM-4PM", "4PM-5PM"], key=f"s_{idx}")
                 if st.button("Confirm Reservation", key=f"cf_{idx}"):
-                    # Trigger Happiness and Animation!
+                    # 触发动图播放！
                     st.session_state.happiness += 1
                     st.session_state.smile_trigger = True
                     st.session_state.booking_shop_id = None
                     st.balloons()
                     st.rerun()
 
-# --- PAGE 4: DEALS (COUPONS & VIRTUAL PET) ---
+# --- PAGE 4: DEALS ---
 elif st.session_state.nav == 'Deals':
-    render_virtual_pet() # Add virtual cat here
+    render_virtual_pet() # Displays 17.gif when triggered
     
     st.markdown("## 🎟️ Exclusive Bundle Deals")
     for idx, c in enumerate(coupons):
@@ -322,31 +321,48 @@ elif st.session_state.nav == 'Deals':
             <span style="text-decoration:line-through; color:#BDC3C7; font-size:15px; margin-left:10px;">{c['o']}</span>
             </div>""", unsafe_allow_html=True)
         if st.button(f"Claim Voucher: {c['n']}", key=f"v_{idx}"): 
-            # Trigger Happiness!
+            # 触发动图播放！
             st.session_state.happiness += 1
             st.session_state.smile_trigger = True
-            st.toast("Voucher Saved!")
+            st.balloons()
             st.rerun()
 
-# --- PAGE 5: COMMUNITY (FORUM) ---
+# --- PAGE 5: COMMUNITY (FORUM + GIF STICKERS 1-16) ---
 elif st.session_state.nav == 'Community':
     st.markdown("## 💬 Forum Feed")
     for p in posts:
         pet_img = get_image_path(p['img'])
         with st.container():
             st.markdown(f"""<div class="app-card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <span style="font-weight:bold; color:#FF6B6B;">{p['user']}</span><div>""", unsafe_allow_html=True)
+                    <span style="font-weight:bold; color:#FF6B6B; font-size:18px;">{p['user']}</span><div>""", unsafe_allow_html=True)
             if st.button("+ Follow", key=f"f_{p['id']}"): st.toast("Followed!")
-            if st.button("+ Friend", key=f"fr_{p['id']}"): st.toast("Requested!")
+            if st.button("+ Friend", key=f"fr_{p['id']}"): st.toast("Friend Request Sent!")
             st.markdown("</div></div>", unsafe_allow_html=True)
             st.image(pet_img, use_column_width=True)
             st.markdown(f"<b>{p['text']}</b><hr>", unsafe_allow_html=True)
             
+            # --- 渲染表情包动图 (1-16.gif) 作为回复 ---
+            gif1_id = p['id'] * 2 + 1  # 奇数GIF (1, 3, 5...)
+            gif2_id = p['id'] * 2 + 2  # 偶数GIF (2, 4, 6...)
+            
+            g1_path = get_image_path(f"{gif1_id}.gif")
+            g2_path = get_image_path(f"{gif2_id}.gif")
+            
+            # 把两张 GIF 并排显示在评论区上方
+            c_gif1, c_gif2, _ = st.columns([1, 1, 3])
+            with c_gif1:
+                try: st.image(g1_path, width=70) 
+                except: pass
+            with c_gif2:
+                try: st.image(g2_path, width=70)
+                except: pass
+
+            # 真实的文字评论
             for c in st.session_state.comments_db[p['id']]:
                 st.markdown(f"<div class='comment-bubble'>🗨️ {c}</div>", unsafe_allow_html=True)
             
             nc = st.text_input("Write a comment...", key=f"i_{p['id']}")
-            if st.button("Post Comment", key=f"p_{p['id']}"):
+            if st.button("Post", key=f"p_{p['id']}"):
                 if nc: 
                     st.session_state.comments_db[p['id']].append(nc)
                     st.rerun()
