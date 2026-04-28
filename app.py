@@ -41,7 +41,7 @@ st.markdown("""
     .check-item { color: #2ECC71; font-size: 14px; margin-right: 10px; }
     .virtual-pet-box { background: linear-gradient(90deg, #FFF5F7 0%, #FFFFFF 100%); border-radius: 25px; padding: 15px; text-align: center; border: 2px dashed #FFB6C1; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(255, 107, 107, 0.15); }
     .voucher-card { background: linear-gradient(90deg, #FFF9FA 0%, #FFF0F5 100%); border: 2px dashed #FFB6C1; border-radius: 20px; padding: 15px; margin-bottom: 15px; }
-    .points-badge { background: #FF6B6B; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(255,107,107,0.3); }
+    .points-badge { background: #FF6B6B; color: white; padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 15px rgba(255,107,107,0.3); display:inline-block; margin-bottom:10px; }
 
     .stButton>button { background: linear-gradient(45deg, #FF6B6B 0%, #FFB6C1 100%); color: white !important; border-radius: 25px !important; border: none !important; font-weight: bold; transition: 0.3s; width: 100%; }
     .share-btn>button { background: #FF4757 !important; }
@@ -50,6 +50,9 @@ st.markdown("""
     .shop-title { font-size: 22px; font-weight: 800; color: #4A4A4A; }
     .shop-tag { background: #FFF5F7; color: #FF6B6B; padding: 4px 10px; border-radius: 8px; font-size: 12px; margin-right: 5px; font-weight: bold; }
     .comment-bubble { background: #FDF2F4; padding: 10px; border-radius: 12px; margin-top: 8px; font-size: 13px; border-left: 4px solid #FFB6C1; }
+    
+    /* Store Box Styling */
+    .blind-box-card { background: #FFF9FA; border: 2px solid #FFE4E1; border-radius: 20px; padding: 15px; text-align: center; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(255,182,193,0.1); }
     </style>
     """, unsafe_allow_html=True)
 
@@ -62,6 +65,7 @@ if 'booking_shop_id' not in st.session_state: st.session_state.booking_shop_id =
 if 'petizen_go_prompt' not in st.session_state: st.session_state.petizen_go_prompt = None
 if 'happiness' not in st.session_state: st.session_state.happiness = 0
 if 'smile_trigger' not in st.session_state: st.session_state.smile_trigger = False
+if 'redeem_success' not in st.session_state: st.session_state.redeem_success = None # 用于记录成功兑换的盲盒名字
 
 # --- DATABASES ---
 merchants = [
@@ -140,7 +144,7 @@ with st.sidebar:
         if st.button("🏠 Home (Shops)"): st.session_state.nav = 'Home'; st.rerun()
         if st.button("🎟️ Deals (Coupons)"): st.session_state.nav = 'Deals'; st.rerun()
         if st.button("💬 Community"): st.session_state.nav = 'Community'; st.rerun()
-        if st.button("🛍️ Petizen Store"): st.session_state.nav = 'Store'; st.rerun()
+        if st.button("🎀 Petizen Store"): st.session_state.nav = 'Store'; st.rerun()
         st.markdown("---")
         st.write("Welcome,")
         st.info(st.session_state.user['owner_name'])
@@ -322,7 +326,7 @@ elif st.session_state.nav == 'Deals':
             st.balloons()
             st.rerun()
 
-# --- PAGE 5: COMMUNITY (FORUM + BIG GIF STICKERS) ---
+# --- PAGE 5: COMMUNITY (FORUM) ---
 elif st.session_state.nav == 'Community':
     st.markdown("## 💬 Forum Feed")
     for p in posts:
@@ -355,37 +359,47 @@ elif st.session_state.nav == 'Community':
                     st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
 
-# --- PAGE 6: STORE (BLIND BOX EXCHANGE - FIXED GRID) ---
+# --- PAGE 6: STORE (BLIND BOX EXCHANGE) ---
 elif st.session_state.nav == 'Store':
-    st.markdown("<h2 style='text-align:center;'>🎁 Petizen Store</h2>", unsafe_allow_html=True)
-    st.markdown("<h4 style='text-align:center; color:gray;'>Cute Pet Blind Box Series</h4>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center; color:#FF6B6B;'>🎀 Petizen Magic Store 🎀</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#888;'>Exchange Happiness Points for Cute Blind Boxes!</p>", unsafe_allow_html=True)
     
+    # 🌟 NEW: THE SUCCESS BANNER! 🌟
+    if st.session_state.redeem_success:
+        st.markdown(f"""
+        <div style='background-color:#E8F8F5; border:3px dashed #2ECC71; padding:20px; border-radius:20px; text-align:center; margin-bottom:25px; box-shadow: 0 5px 15px rgba(46, 204, 113, 0.2);'>
+            <h2 style='color:#2ECC71; margin:0;'>🎉 Redemption Successful! 🎉</h2>
+            <p style='color:#555; font-size:16px; margin:10px 0 0 0;'>You just unlocked: <b>{st.session_state.redeem_success}</b>! Check your inventory soon. 🐾</p>
+        </div>
+        """, unsafe_allow_html=True)
+        # Clear the success message so it doesn't stay forever
+        st.session_state.redeem_success = None
+        
     st.markdown(f"""
-    <div style='text-align:center; margin: 20px 0;'>
+    <div style='text-align:center; margin: 15px 0 30px 0;'>
         <span class='points-badge'>🌟 Your Happiness Points: {st.session_state.happiness}</span>
-        <p style='color:gray; font-size:13px; margin-top:10px;'>(10 Points = 1 Blind Box! Book services to earn more.)</p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Render exactly 3 items per row, cleanly.
+    # Render Grid Items (Cute Pink Box Style)
     for i in range(0, len(blind_boxes), 3):
         cols = st.columns(3)
         for j in range(3):
             if i + j < len(blind_boxes):
                 box = blind_boxes[i + j]
                 with cols[j]:
-                    # Load image natively to avoid HTML div errors
+                    st.markdown("<div class='blind-box-card'>", unsafe_allow_html=True)
                     try: st.image(get_image_path(box['img']), use_column_width=True)
                     except: st.markdown("📦")
+                    st.markdown(f"<p style='font-size:14px; font-weight:bold; color:#4A4A4A; margin-top:10px; height: 40px;'>{box['name']}</p></div>", unsafe_allow_html=True)
                     
-                    st.markdown(f"<p style='font-size:13px; font-weight:bold; text-align:center; margin: 10px 0; height: 35px;'>{box['name']}</p>", unsafe_allow_html=True)
-                    
-                    if st.button(f"Redeem (-10)", key=f"box_{i+j}"):
+                    if st.button(f"🎁 Redeem (-10)", key=f"box_{i+j}"):
                         if st.session_state.happiness >= 10:
                             st.session_state.happiness -= 10
-                            st.success(f"Redeemed: {box['name']}! 🎉")
+                            # Set the success message and trigger rerun to show banner + balloons!
+                            st.session_state.redeem_success = box['name']
                             st.balloons()
                             st.rerun()
                         else:
-                            st.error("Not enough points!")
-        st.markdown("<br>", unsafe_allow_html=True) # Spacing between rows
+                            st.error("Oops! Not enough points. 🐾")
+        st.markdown("<br>", unsafe_allow_html=True)
