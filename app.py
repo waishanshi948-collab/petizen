@@ -130,17 +130,19 @@ def render_virtual_pet():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ==========================================
-# 4. STICKY SIDEBAR NAVIGATION
+# 4. STICKY SIDEBAR NAVIGATION (FIXED!)
 # ==========================================
 with st.sidebar:
     st.image(get_image_path("logo.jpg"), width=120)
     st.markdown("### Nav Menu")
     if 'user' in st.session_state:
+        # ALL 5 BUTTONS ARE HERE NOW!
         if st.button("🛂 My Passport"): st.session_state.nav = 'Passport_Display'; st.rerun()
         if st.button("🏠 Home (Shops)"): st.session_state.nav = 'Home'; st.rerun()
         if st.button("🎟️ Deals (Coupons)"): st.session_state.nav = 'Deals'; st.rerun()
         if st.button("💬 Community"): st.session_state.nav = 'Community'; st.rerun()
-        if st.button("🛍️ Petizen Store"): st.session_state.nav = 'Store'; st.rerun()
+        if st.button("🛍️ Petizen Store"): st.session_state.nav = 'Store'; st.rerun() 
+        
         st.markdown("---")
         st.write("Welcome,")
         st.info(st.session_state.user['owner_name'])
@@ -244,6 +246,10 @@ elif st.session_state.nav == 'Passport_Display':
             <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=PetizenVerified" style="width:90px; margin-top:10px;">
         </div>
         """, unsafe_allow_html=True)
+
+    st.markdown("<div class='share-btn'>", unsafe_allow_html=True)
+    if st.button("🔗 Share with Vet / Services"): st.success("Passport link copied!")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- PAGE 3: HOME (SHOPS, BOOKING & PETIZEN GO) ---
 elif st.session_state.nav == 'Home':
@@ -363,7 +369,6 @@ elif st.session_state.nav == 'Store':
     </div>
     """, unsafe_allow_html=True)
     
-    # 3-Column Grid for Blind Boxes
     cols = st.columns(3)
     for idx, box in enumerate(blind_boxes):
         with cols[idx % 3]:
