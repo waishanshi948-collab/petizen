@@ -130,19 +130,17 @@ def render_virtual_pet():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ==========================================
-# 4. STICKY SIDEBAR NAVIGATION (FIXED!)
+# 4. STICKY SIDEBAR NAVIGATION
 # ==========================================
 with st.sidebar:
     st.image(get_image_path("logo.jpg"), width=120)
     st.markdown("### Nav Menu")
     if 'user' in st.session_state:
-        # ALL 5 BUTTONS ARE HERE NOW!
         if st.button("🛂 My Passport"): st.session_state.nav = 'Passport_Display'; st.rerun()
         if st.button("🏠 Home (Shops)"): st.session_state.nav = 'Home'; st.rerun()
         if st.button("🎟️ Deals (Coupons)"): st.session_state.nav = 'Deals'; st.rerun()
         if st.button("💬 Community"): st.session_state.nav = 'Community'; st.rerun()
-        if st.button("🛍️ Petizen Store"): st.session_state.nav = 'Store'; st.rerun() 
-        
+        if st.button("🛍️ Petizen Store"): st.session_state.nav = 'Store'; st.rerun()
         st.markdown("---")
         st.write("Welcome,")
         st.info(st.session_state.user['owner_name'])
@@ -357,7 +355,7 @@ elif st.session_state.nav == 'Community':
                     st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
 
-# --- PAGE 6: STORE (BLIND BOX EXCHANGE) ---
+# --- PAGE 6: STORE (BLIND BOX EXCHANGE - FIXED GRID) ---
 elif st.session_state.nav == 'Store':
     st.markdown("<h2 style='text-align:center;'>🎁 Petizen Store</h2>", unsafe_allow_html=True)
     st.markdown("<h4 style='text-align:center; color:gray;'>Cute Pet Blind Box Series</h4>", unsafe_allow_html=True)
@@ -369,23 +367,25 @@ elif st.session_state.nav == 'Store':
     </div>
     """, unsafe_allow_html=True)
     
-    cols = st.columns(3)
-    for idx, box in enumerate(blind_boxes):
-        with cols[idx % 3]:
-            st.markdown("<div class='app-card' style='padding: 10px; text-align:center; height: 350px;'>", unsafe_allow_html=True)
-            try:
-                st.image(get_image_path(box['img']), use_column_width=True)
-            except:
-                st.markdown("📦", unsafe_allow_html=True)
-            
-            st.markdown(f"<p style='font-size:13px; font-weight:bold; height: 40px; overflow: hidden;'>{box['name']}</p>", unsafe_allow_html=True)
-            
-            if st.button(f"Redeem (-10)", key=f"box_{idx}"):
-                if st.session_state.happiness >= 10:
-                    st.session_state.happiness -= 10
-                    st.success(f"Redeemed: {box['name']}! 🎉")
-                    st.balloons()
-                    st.rerun()
-                else:
-                    st.error("Not enough points!")
-            st.markdown("</div>", unsafe_allow_html=True)
+    # Render exactly 3 items per row, cleanly.
+    for i in range(0, len(blind_boxes), 3):
+        cols = st.columns(3)
+        for j in range(3):
+            if i + j < len(blind_boxes):
+                box = blind_boxes[i + j]
+                with cols[j]:
+                    # Load image natively to avoid HTML div errors
+                    try: st.image(get_image_path(box['img']), use_column_width=True)
+                    except: st.markdown("📦")
+                    
+                    st.markdown(f"<p style='font-size:13px; font-weight:bold; text-align:center; margin: 10px 0; height: 35px;'>{box['name']}</p>", unsafe_allow_html=True)
+                    
+                    if st.button(f"Redeem (-10)", key=f"box_{i+j}"):
+                        if st.session_state.happiness >= 10:
+                            st.session_state.happiness -= 10
+                            st.success(f"Redeemed: {box['name']}! 🎉")
+                            st.balloons()
+                            st.rerun()
+                        else:
+                            st.error("Not enough points!")
+        st.markdown("<br>", unsafe_allow_html=True) # Spacing between rows
