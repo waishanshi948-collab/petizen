@@ -41,6 +41,7 @@ st.markdown("""
     .check-item { color: #2ECC71; font-size: 14px; margin-right: 10px; }
     .virtual-pet-box { background: linear-gradient(90deg, #FFF5F7 0%, #FFFFFF 100%); border-radius: 25px; padding: 15px; text-align: center; border: 2px dashed #FFB6C1; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(255, 107, 107, 0.15); }
     .voucher-card { background: linear-gradient(90deg, #FFF9FA 0%, #FFF0F5 100%); border: 2px dashed #FFB6C1; border-radius: 20px; padding: 15px; margin-bottom: 15px; }
+    .points-badge { background: #FF6B6B; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 10px rgba(255,107,107,0.3); }
 
     .stButton>button { background: linear-gradient(45deg, #FF6B6B 0%, #FFB6C1 100%); color: white !important; border-radius: 25px !important; border: none !important; font-weight: bold; transition: 0.3s; width: 100%; }
     .share-btn>button { background: #FF4757 !important; }
@@ -102,6 +103,18 @@ posts = [
     {"id": 7, "user": "@Hedgehog_H", "img": "宠物8.jpg", "text": "Work from home with a hedgehog!"}
 ]
 
+blind_boxes = [
+    {"img": "mh1.jpg", "name": "Playful Kitten's Yarn Adventure"},
+    {"img": "mh2.jpg", "name": "Shy Hamster's Secret Base"},
+    {"img": "mh3.jpg", "name": "Derpy Shiba's Hot Spring"},
+    {"img": "mh4.jpg", "name": "Sweet Bunny's Tea Party"},
+    {"img": "mh5.jpg", "name": "Naughty Parrot's Beach"},
+    {"img": "mh6.jpg", "name": "Goldfish's Deep Sea Park"},
+    {"img": "mh7.jpg", "name": "Hedgehog's Starry Camp"},
+    {"img": "mh8.jpg", "name": "Dreamy Owl's Magic Library"},
+    {"img": "mh9.jpg", "name": "Mystery Shadow Companion"}
+]
+
 # --- VIRTUAL PET COMPONENT (17.gif) ---
 def render_virtual_pet():
     st.markdown("<div class='virtual-pet-box'>", unsafe_allow_html=True)
@@ -127,6 +140,7 @@ with st.sidebar:
         if st.button("🏠 Home (Shops)"): st.session_state.nav = 'Home'; st.rerun()
         if st.button("🎟️ Deals (Coupons)"): st.session_state.nav = 'Deals'; st.rerun()
         if st.button("💬 Community"): st.session_state.nav = 'Community'; st.rerun()
+        if st.button("🛍️ Petizen Store"): st.session_state.nav = 'Store'; st.rerun()
         st.markdown("---")
         st.write("Welcome,")
         st.info(st.session_state.user['owner_name'])
@@ -192,7 +206,7 @@ elif st.session_state.nav == 'Passport_Display':
         st.markdown(f"<h1 style='color:#2D3436; margin-bottom:5px;'>{u['pet_name']} ❤️</h1>", unsafe_allow_html=True)
         st.markdown(f"🐾 **Breed:** {u['color']} {u['breed']} ({u['species']})<br>📅 **Age:** {u['age'] if u['age'] else 'Secret'}<br>👤 **Owner:** {u['owner_name']}", unsafe_allow_html=True)
         if u['insurance']:
-            st.markdown("<span style='background:#E8F8F5; color:#2ECC71; padding:3px 8px; border-radius:10px; font-size:12px; font-weight:bold;'>🛡️ Insured by Petizen</span>", unsafe_allow_html=True)
+            st.markdown("<span style='background:#E8F8F5; color:#2ECC71; padding:3px 8px; border-radius:10px; font-size:12px; font-weight:bold; display:inline-block; margin-top:5px;'>🛡️ Insured by Petizen</span>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown(f"""
@@ -208,10 +222,8 @@ elif st.session_state.nav == 'Passport_Display':
     </div>
     """, unsafe_allow_html=True)
 
-    # Format Medical History dynamically
     med_html = ""
-    if not u['medical'] or "None" in u['medical']:
-        med_html = "<li>No pre-existing conditions.</li>"
+    if not u['medical'] or "None" in u['medical']: med_html = "<li>No pre-existing conditions.</li>"
     else:
         for med in u['medical']: med_html += f"<li>{med}</li>"
 
@@ -233,10 +245,6 @@ elif st.session_state.nav == 'Passport_Display':
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<div class='share-btn'>", unsafe_allow_html=True)
-    if st.button("🔗 Share with Vet / Services"): st.success("Passport link copied!")
-    st.markdown("</div>", unsafe_allow_html=True)
-
 # --- PAGE 3: HOME (SHOPS, BOOKING & PETIZEN GO) ---
 elif st.session_state.nav == 'Home':
     render_virtual_pet() 
@@ -257,7 +265,8 @@ elif st.session_state.nav == 'Home':
         with st.container():
             st.markdown(f"""<div class="app-card">
                 <span class="shop-title">{row['name']}</span> <span style="color:#FF6B6B;">⭐ {row['rating']}</span>""", unsafe_allow_html=True)
-            st.image(img, use_column_width=True)
+            try: st.image(img, use_column_width=True)
+            except: pass
             st.markdown(f"""<div style="margin: 10px 0;"><span class="shop-tag">📍 {row['loc']}</span><span class="shop-tag">💰 ${row['price']}</span></div>
                 <p style="color:#555; font-size:14px;"><b>Services:</b> {row['serv']}</p></div>""", unsafe_allow_html=True)
             
@@ -267,13 +276,11 @@ elif st.session_state.nav == 'Home':
             
             if st.session_state.booking_shop_id == row['id']:
                 if st.session_state.petizen_go_prompt != row['id']:
-                    # Step 1: Pick time
                     slot = st.selectbox("Select Time Slot:", ["1PM-2PM", "2PM-3PM", "3PM-4PM", "4PM-5PM"], key=f"s_{idx}")
                     if st.button("Next Step", key=f"nx_{idx}"):
                         st.session_state.petizen_go_prompt = row['id']
                         st.rerun()
                 else:
-                    # Step 2: Petizen Go Prompt
                     st.warning("🚗 Do you need 'Petizen Go' pick-up and drop-off service for your pet?")
                     c_yes, c_no = st.columns(2)
                     with c_yes:
@@ -322,7 +329,8 @@ elif st.session_state.nav == 'Community':
             if st.button("+ Follow", key=f"f_{p['id']}"): st.toast("Followed!")
             if st.button("+ Friend", key=f"fr_{p['id']}"): st.toast("Friend Request Sent!")
             st.markdown("</div></div>", unsafe_allow_html=True)
-            st.image(pet_img, use_column_width=True)
+            try: st.image(pet_img, use_column_width=True)
+            except: pass
             st.markdown(f"<b>{p['text']}</b><hr style='margin:10px 0;'>", unsafe_allow_html=True)
             
             gif1_id = p['id'] * 2 + 1  
@@ -341,4 +349,38 @@ elif st.session_state.nav == 'Community':
                 if nc: 
                     st.session_state.comments_db[p['id']].append(nc)
                     st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+
+# --- PAGE 6: STORE (BLIND BOX EXCHANGE) ---
+elif st.session_state.nav == 'Store':
+    st.markdown("<h2 style='text-align:center;'>🎁 Petizen Store</h2>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align:center; color:gray;'>Cute Pet Blind Box Series</h4>", unsafe_allow_html=True)
+    
+    st.markdown(f"""
+    <div style='text-align:center; margin: 20px 0;'>
+        <span class='points-badge'>🌟 Your Happiness Points: {st.session_state.happiness}</span>
+        <p style='color:gray; font-size:13px; margin-top:10px;'>(10 Points = 1 Blind Box! Book services to earn more.)</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 3-Column Grid for Blind Boxes
+    cols = st.columns(3)
+    for idx, box in enumerate(blind_boxes):
+        with cols[idx % 3]:
+            st.markdown("<div class='app-card' style='padding: 10px; text-align:center; height: 350px;'>", unsafe_allow_html=True)
+            try:
+                st.image(get_image_path(box['img']), use_column_width=True)
+            except:
+                st.markdown("📦", unsafe_allow_html=True)
+            
+            st.markdown(f"<p style='font-size:13px; font-weight:bold; height: 40px; overflow: hidden;'>{box['name']}</p>", unsafe_allow_html=True)
+            
+            if st.button(f"Redeem (-10)", key=f"box_{idx}"):
+                if st.session_state.happiness >= 10:
+                    st.session_state.happiness -= 10
+                    st.success(f"Redeemed: {box['name']}! 🎉")
+                    st.balloons()
+                    st.rerun()
+                else:
+                    st.error("Not enough points!")
             st.markdown("</div>", unsafe_allow_html=True)
