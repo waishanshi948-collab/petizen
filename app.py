@@ -17,12 +17,10 @@ def get_image_path(filename):
     return filename
 
 def get_gif_html(filename, width=160):
-    """强制使用 HTML Base64 渲染 GIF，保证100%会动且清晰"""
     actual_path = get_image_path(filename)
     try:
         with open(actual_path, "rb") as f:
             data = base64.b64encode(f.read()).decode("utf-8")
-        # 增加圆角、阴影和间距，使表情包更好看
         return f'<img src="data:image/gif;base64,{data}" width="{width}px" style="border-radius:15px; margin-right:15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">'
     except:
         return ""
@@ -34,72 +32,20 @@ st.set_page_config(page_title="Petizen", page_icon="🐾", layout="centered")
 
 st.markdown("""
     <style>
-    /* Background & Global Font */
-    [data-testid="stAppViewContainer"] {
-        background: linear-gradient(135deg, #FFF0F5 0%, #FFFFFF 50%, #F0F8FF 100%);
-    }
+    [data-testid="stAppViewContainer"] { background: linear-gradient(135deg, #FFF0F5 0%, #FFFFFF 50%, #F0F8FF 100%); }
+    [data-testid="stSidebar"] { background-color: #FFFFFF; border-right: 1px solid #FFE4E1; }
     
-    /* Sidebar Styling */
-    [data-testid="stSidebar"] {
-        background-color: #FFFFFF;
-        border-right: 1px solid #FFE4E1;
-    }
-    
-    /* Rounded App Cards */
-    .app-card {
-        background-color: rgba(255, 255, 255, 0.95);
-        border-radius: 25px;
-        padding: 20px;
-        margin-bottom: 25px;
-        box-shadow: 0 10px 25px rgba(255, 182, 193, 0.2);
-        border: 1px solid #FFE4E1;
-    }
-    
-    /* Passport Specific Cards */
-    .passport-card {
-        background-color: #FFFFFF;
-        border-radius: 20px;
-        padding: 20px;
-        margin-bottom: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        border: 1px solid #F1F2F6;
-    }
+    .app-card { background-color: rgba(255, 255, 255, 0.95); border-radius: 25px; padding: 20px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(255, 182, 193, 0.2); border: 1px solid #FFE4E1; }
+    .passport-card { background-color: #FFFFFF; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #F1F2F6; }
     .status-green { background: #E8F8F5; color: #2ECC71; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; }
     .check-item { color: #2ECC71; font-size: 14px; margin-right: 10px; }
-    
-    /* Virtual Pet Widget */
-    .virtual-pet-box {
-        background: linear-gradient(90deg, #FFF5F7 0%, #FFFFFF 100%);
-        border-radius: 25px;
-        padding: 15px;
-        text-align: center;
-        border: 2px dashed #FFB6C1;
-        margin-bottom: 25px;
-        box-shadow: 0 5px 15px rgba(255, 107, 107, 0.15);
-    }
-    
-    /* Voucher Styling */
-    .voucher-card {
-        background: linear-gradient(90deg, #FFF9FA 0%, #FFF0F5 100%);
-        border: 2px dashed #FFB6C1;
-        border-radius: 20px;
-        padding: 15px;
-        margin-bottom: 15px;
-    }
+    .virtual-pet-box { background: linear-gradient(90deg, #FFF5F7 0%, #FFFFFF 100%); border-radius: 25px; padding: 15px; text-align: center; border: 2px dashed #FFB6C1; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(255, 107, 107, 0.15); }
+    .voucher-card { background: linear-gradient(90deg, #FFF9FA 0%, #FFF0F5 100%); border: 2px dashed #FFB6C1; border-radius: 20px; padding: 15px; margin-bottom: 15px; }
 
-    /* Buttons */
-    .stButton>button {
-        background: linear-gradient(45deg, #FF6B6B 0%, #FFB6C1 100%);
-        color: white !important;
-        border-radius: 25px !important;
-        border: none !important;
-        font-weight: bold;
-        transition: 0.3s;
-        width: 100%;
-    }
+    .stButton>button { background: linear-gradient(45deg, #FF6B6B 0%, #FFB6C1 100%); color: white !important; border-radius: 25px !important; border: none !important; font-weight: bold; transition: 0.3s; width: 100%; }
     .share-btn>button { background: #FF4757 !important; }
-
-    .stTextInput>div>div>input, .stSelectbox>div>div>div { border-radius: 20px !important; border: 1px solid #FFB6C1 !important; }
+    .stTextInput>div>div>input, .stSelectbox>div>div>div, .stMultiSelect>div>div>div { border-radius: 20px !important; border: 1px solid #FFB6C1 !important; }
+    
     .shop-title { font-size: 22px; font-weight: 800; color: #4A4A4A; }
     .shop-tag { background: #FFF5F7; color: #FF6B6B; padding: 4px 10px; border-radius: 8px; font-size: 12px; margin-right: 5px; font-weight: bold; }
     .comment-bubble { background: #FDF2F4; padding: 10px; border-radius: 12px; margin-top: 8px; font-size: 13px; border-left: 4px solid #FFB6C1; }
@@ -112,6 +58,7 @@ st.markdown("""
 if 'nav' not in st.session_state: st.session_state.nav = 'Form'
 if 'comments_db' not in st.session_state: st.session_state.comments_db = {i: [] for i in range(8)}
 if 'booking_shop_id' not in st.session_state: st.session_state.booking_shop_id = None
+if 'petizen_go_prompt' not in st.session_state: st.session_state.petizen_go_prompt = None
 if 'happiness' not in st.session_state: st.session_state.happiness = 0
 if 'smile_trigger' not in st.session_state: st.session_state.smile_trigger = False
 
@@ -159,20 +106,13 @@ posts = [
 def render_virtual_pet():
     st.markdown("<div class='virtual-pet-box'>", unsafe_allow_html=True)
     if st.session_state.smile_trigger:
-        # 使用 base64 保证 17.gif 也顺畅播放并变大
         gif_html = get_gif_html("17.gif", width=180)
-        msg = "YAY! Happiness +1 💖"
-        
-        if gif_html:
-            st.markdown(f"<div style='text-align:center;'>{gif_html}</div>", unsafe_allow_html=True)
-        else:
-            st.markdown("<h1 style='text-align:center;'>😻</h1>", unsafe_allow_html=True)
-            
-        st.markdown(f"<h4 style='color:#FF6B6B; margin:5px 0;'>{msg}</h4>", unsafe_allow_html=True)
+        if gif_html: st.markdown(f"<div style='text-align:center;'>{gif_html}</div>", unsafe_allow_html=True)
+        else: st.markdown("<h1 style='text-align:center;'>😻</h1>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='color:#FF6B6B; margin:5px 0;'>YAY! Happiness +1 💖</h4>", unsafe_allow_html=True)
         st.session_state.smile_trigger = False 
     else:
         st.markdown("<h4 style='color:gray; margin:5px 0;'>Ready for next treat!</h4>", unsafe_allow_html=True)
-    
     st.markdown(f"<p style='color:gray; font-size:14px; margin:0;'>Total Happiness Level: <b>{st.session_state.happiness}</b> 🌟</p>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -208,22 +148,30 @@ if st.session_state.nav == 'Form':
             with c1:
                 p_name = st.text_input("Pet Name *")
                 p_species = st.selectbox("Species *", ["Cat", "Dog", "Bird", "Bunny", "Other"])
+                p_breed = st.selectbox("Breed", ["Ragdoll", "British Shorthair", "Persian", "Maine Coon", "Golden Retriever", "Poodle", "Corgi", "Mixed", "Other"])
                 p_color = st.text_input("Fur Color")
                 p_gender = st.radio("Gender", ["Boy", "Girl"])
             with c2:
                 p_age = st.text_input("Age (e.g., 2 years)")
                 p_diet = st.text_input("Dietary Habits")
                 p_vaccine = st.radio("Vaccinated?", ["Yes", "No"])
+                p_medical = st.multiselect("Medical History", ["None", "Heart Disease", "Cardiovascular Disease", "Joint Issues", "Skin Allergies", "Digestive Issues"])
             
             st.markdown("---")
+            st.subheader("Protection & Contact")
+            p_insurance = st.checkbox("✅ Opt-in for Petizen Insurance Protection")
+            if p_insurance:
+                st.info("🛡️ If you book through Petizen and an accident occurs during the service, the platform provides advance compensation or connects with insurance.")
+            
             o_name = st.text_input("Owner Name *")
             o_tel = st.text_input("Owner Contact Number *")
             
             if st.form_submit_button("Generate Passport"):
                 if p_name and o_name and o_tel:
                     st.session_state.user = {
-                        "pet_name": p_name, "species": p_species, "color": p_color, 
+                        "pet_name": p_name, "species": p_species, "breed": p_breed, "color": p_color, 
                         "gender": p_gender, "diet": p_diet, "vaccine": p_vaccine, 
+                        "medical": p_medical, "insurance": p_insurance,
                         "owner_name": o_name, "tel": o_tel, "age": p_age
                     }
                     st.session_state.nav = 'Passport_Display'
@@ -242,7 +190,9 @@ elif st.session_state.nav == 'Passport_Display':
         st.image(get_image_path("cat.jpg"), use_column_width=True)
     with col2:
         st.markdown(f"<h1 style='color:#2D3436; margin-bottom:5px;'>{u['pet_name']} ❤️</h1>", unsafe_allow_html=True)
-        st.markdown(f"🐾 **Breed/Species:** {u['color']} {u['species']}<br>📅 **Age:** {u['age'] if u['age'] else 'Secret'}<br>👤 **Owner:** {u['owner_name']}", unsafe_allow_html=True)
+        st.markdown(f"🐾 **Breed:** {u['color']} {u['breed']} ({u['species']})<br>📅 **Age:** {u['age'] if u['age'] else 'Secret'}<br>👤 **Owner:** {u['owner_name']}", unsafe_allow_html=True)
+        if u['insurance']:
+            st.markdown("<span style='background:#E8F8F5; color:#2ECC71; padding:3px 8px; border-radius:10px; font-size:12px; font-weight:bold;'>🛡️ Insured by Petizen</span>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown(f"""
@@ -258,15 +208,20 @@ elif st.session_state.nav == 'Passport_Display':
     </div>
     """, unsafe_allow_html=True)
 
+    # Format Medical History dynamically
+    med_html = ""
+    if not u['medical'] or "None" in u['medical']:
+        med_html = "<li>No pre-existing conditions.</li>"
+    else:
+        for med in u['medical']: med_html += f"<li>{med}</li>"
+
     col3, col4 = st.columns(2)
     with col3:
-        st.markdown("""
+        st.markdown(f"""
         <div class='passport-card' style='height: 180px;'>
             <h4 style='margin:0;'>🏥 Medical History</h4>
             <ul style='font-size:13px; color:gray; padding-left:15px; margin-top:10px;'>
-                <li>Wellness checkup - Apr 2024</li>
-                <li>Microchipped - Jan 2023</li>
-                <li>No known allergies.</li>
+                {med_html}
             </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -282,7 +237,7 @@ elif st.session_state.nav == 'Passport_Display':
     if st.button("🔗 Share with Vet / Services"): st.success("Passport link copied!")
     st.markdown("</div>", unsafe_allow_html=True)
 
-# --- PAGE 3: HOME (SHOPS & BOOKING) ---
+# --- PAGE 3: HOME (SHOPS, BOOKING & PETIZEN GO) ---
 elif st.session_state.nav == 'Home':
     render_virtual_pet() 
     
@@ -308,14 +263,35 @@ elif st.session_state.nav == 'Home':
             
             if st.button(f"Book @ {row['name']}", key=f"bk_{idx}"):
                 st.session_state.booking_shop_id = row['id']
+                st.session_state.petizen_go_prompt = None
+            
             if st.session_state.booking_shop_id == row['id']:
-                slot = st.selectbox("Select Time Slot:", ["1PM-2PM", "2PM-3PM", "3PM-4PM", "4PM-5PM"], key=f"s_{idx}")
-                if st.button("Confirm Reservation", key=f"cf_{idx}"):
-                    st.session_state.happiness += 1
-                    st.session_state.smile_trigger = True
-                    st.session_state.booking_shop_id = None
-                    st.balloons()
-                    st.rerun()
+                if st.session_state.petizen_go_prompt != row['id']:
+                    # Step 1: Pick time
+                    slot = st.selectbox("Select Time Slot:", ["1PM-2PM", "2PM-3PM", "3PM-4PM", "4PM-5PM"], key=f"s_{idx}")
+                    if st.button("Next Step", key=f"nx_{idx}"):
+                        st.session_state.petizen_go_prompt = row['id']
+                        st.rerun()
+                else:
+                    # Step 2: Petizen Go Prompt
+                    st.warning("🚗 Do you need 'Petizen Go' pick-up and drop-off service for your pet?")
+                    c_yes, c_no = st.columns(2)
+                    with c_yes:
+                        if st.button("Yes, add Petizen Go", key=f"yes_{idx}"):
+                            st.session_state.happiness += 1
+                            st.session_state.smile_trigger = True
+                            st.session_state.booking_shop_id = None
+                            st.session_state.petizen_go_prompt = None
+                            st.balloons()
+                            st.rerun()
+                    with c_no:
+                        if st.button("No, thanks", key=f"no_{idx}"):
+                            st.session_state.happiness += 1
+                            st.session_state.smile_trigger = True
+                            st.session_state.booking_shop_id = None
+                            st.session_state.petizen_go_prompt = None
+                            st.balloons()
+                            st.rerun()
 
 # --- PAGE 4: DEALS ---
 elif st.session_state.nav == 'Deals':
@@ -349,11 +325,8 @@ elif st.session_state.nav == 'Community':
             st.image(pet_img, use_column_width=True)
             st.markdown(f"<b>{p['text']}</b><hr style='margin:10px 0;'>", unsafe_allow_html=True)
             
-            # --- 渲染超大表情包动图 (1-16.gif) ---
             gif1_id = p['id'] * 2 + 1  
             gif2_id = p['id'] * 2 + 2  
-            
-            # 尺寸设定为 width=160px，比原来大了一倍以上
             g1_html = get_gif_html(f"{gif1_id}.gif", width=160)
             g2_html = get_gif_html(f"{gif2_id}.gif", width=160)
             
